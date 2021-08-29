@@ -80,6 +80,7 @@
         const CD = $('.cd')
         const playBtn = $('.btn-toggle-play')
         const player = $('.player')
+        const progressBar = $('#progress')
 
         const app = {
             currentIndexSong: 0,
@@ -199,6 +200,19 @@
                     player.classList.remove('playing')
                     app.isPlaying = false
                 }
+
+                //change progressBar 
+                audio.ontimeupdate = function () {
+                    var percent = (audio.currentTime * 100 / audio.duration) 
+                    progressBar.value = percent
+                }
+
+                //change progress of audio
+                progressBar.onchange = function (e) {
+                    var percent = e.target.value
+                    audio.currentTime = audio.duration * percent / 100
+                }
+                
             },
             loadCurrentSong: function() {
                 heading.textContent = this.currentSong.name
