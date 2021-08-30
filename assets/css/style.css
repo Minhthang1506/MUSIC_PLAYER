@@ -1,5 +1,5 @@
 :root {
-    --primary-color: #ec1f55;
+    --primary-color: #c9184a;
     --text-color: #333;
   }
   
@@ -165,7 +165,7 @@
   }
   
   .song:active {
-    opacity: 0.8;
+    opacity: 0.6;
   }
   
   .song.active .option,

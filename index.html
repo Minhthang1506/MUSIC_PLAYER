@@ -54,17 +54,7 @@
     
         <!-- Playlist -->
         <div class="playlist">
-            <!-- <div class="song">
-                <div class="thumb" style="background-image: url('https://i.ytimg.com/vi/jTLhQf5KJSc/maxresdefault.jpg')">
-                </div>
-                <div class="body">
-                    <h3 class="title">Music name</h3>
-                    <p class="author">Singer</p>
-                </div>
-                <div class="option">
-                    <i class="fas fa-ellipsis-h"></i>
-                </div>
-            </div> -->
+
         </div>
     </div>
 </div>
@@ -88,6 +78,7 @@
         const previousSongBtn = $('.btn-prev')
         const repeatSongBtn = $('.btn-repeat')
         const randomSongBtn = $('.btn-random')
+        const playList = $('.playlist')
 
         const app = {
             currentIndexSong: 0,
@@ -103,8 +94,8 @@
             {
                 name: 'Phố đã lên đèn',
                 singer: 'MCK',
-                path: './assets/music/Bai_Nay_Chill_Phet.mp3',
-                image: './assets/img/Bai_nay_chill_phet.jpg'
+                path: './assets/music/Pho_Da_Len_Den.mp3',
+                image: './assets/img/Pho_da_len_den.jpg'
             },
             {
                 name: 'No Promises',
@@ -152,13 +143,26 @@
             randomSongs: [
                 
             ],
-            currentRandomSong: {
-
-            },
+            currentRandomSong: null,
             render: function () {
-                const htmlRender = this.songs.map(song => {
+                const htmlRender = this.songs.map( (song, index)=> {
+                    // var isActiveSong
+                    // if(this.currentIndexSong != -1 ){
+                    //     if(this.songs[this.currentIndexSong].name == song.name){
+                    //         isActiveSong = true
+                    //     } else {
+                    //         isActiveSong = false
+                    //     }
+                    // } else {
+                    //     if(this.currentRandomSong.name == song.name){
+                    //         isActiveSong = true
+                    //     } else {
+                    //         isActiveSong = false
+                    //     }
+                    // }
+
                     return `
-                        <div class="song">
+                        <div class="song ${ this.songs[this.currentIndexSong].name == song.name ? 'active' : ''}" data-index="${index}">
                             <div class="thumb" style="background-image: url('${song.image}')">
                             </div>
                             <div class="body">
@@ -172,16 +176,13 @@
                     `
                 })
     
-                $('.playlist').innerHTML = htmlRender.join('')
+                playList.innerHTML = htmlRender.join('')
             },
             defineProperties: function () {
                 Object.defineProperty(this, 'currentSong', {
                     get: function () {
                         return this.songs[this.currentIndexSong]
                     },
-                    set: function (value) {
-                        
-                    }
                 })
             },
             handleEvent: function () {
@@ -261,12 +262,10 @@
                 
                 //handle end audio event 
                 audio.onended = function () {
-                    if(app.currentIndexSong != app.songs.length -1){ 
-                        app.nextSong()
+                    if(app.isRepeat){ 
                         audio.play()
-                    } else if (app.isRepeat) {
-                        app.nextSong()
-                        audio.play()
+                    } else {
+                        nextSongBtn.onclick()
                     }
                 }
 
@@ -276,22 +275,38 @@
                         app.isRandom = false
                         this.classList.remove('active')
                         app.randomSongs.length = []
+                        app.currentRandomSong = null
                     } else {
                         app.isRandom = true
-                        this.classList.add('active')                 
+                        this.classList.add('active')               
+                    }
+                }
+
+                //click to specific song 
+                playList.onclick = function(e) {
+                    let anotherSong = e.target.closest('.song:not(.active)')
+                    let optBtn = e.target.closest('.option')
+
+                    if(anotherSong) {
+                        app.currentIndexSong = anotherSong.attributes['data-index'].value
+                        app.loadCurrentSong(app.songs[app.currentIndexSong])
+                        audio.play()
+                        app.activeSong()
                     }
                 }
                 
             },
-            loadCurrentSong: function() {
-                heading.textContent = this.currentSong.name
-                CDThumbnail.style.backgroundImage = `url(${this.currentSong.image})`
-                audio.src = this.currentSong.path
-            },
-            loadCurrentRandomSong: function() {
-                heading.textContent = this.currentRandomSong.name
-                CDThumbnail.style.backgroundImage = `url(${this.currentRandomSong.image})`
-                audio.src = this.currentRandomSong.path
+            loadCurrentSong: function(song) {
+                if(song) {
+                    heading.textContent = song.name
+                    CDThumbnail.style.backgroundImage = `url(${song.image})`
+                    audio.src = song.path
+                } else {
+                    heading.textContent = this.currentSong.name
+                    CDThumbnail.style.backgroundImage = `url(${this.currentSong.image})`
+                    audio.src = this.currentSong.path
+                }
+                
             },
             createRandomList: function() {
                 this.randomSongs = this.songs.map( it => it)
@@ -300,27 +315,25 @@
                 var newRandomIndex 
                 if(this.randomSongs.length == 0)
                     this.createRandomList()
-                console.log(this.randomSongs)
+
                 newRandomIndex = Math.floor(Math.random() * this.randomSongs.length)
-                console.log(newRandomIndex)
                 this.currentRandomSong = this.randomSongs.splice(newRandomIndex,1)[0]
             },
             nextSong: function() {
                 if(this.isRandom) {
                     this.randomSong()
-                    this.loadCurrentRandomSong()
                 } else {
                     this.currentIndexSong++
                     this.currentIndexSong %= this.songs.length
                     this.currentSong = this.songs[this.currentIndexSong]
-                    this.loadCurrentSong()
-                }
+                } 
                 
+                this.loadCurrentSong(this.currentRandomSong)
+                this.activeSong()
             },
             previousSong: function() {
                 if(this.isRandom) {
                     this.randomSong()
-                    this.loadCurrentRandomSong()
                 } else {
                     this.currentIndexSong--
                     if(this.currentIndexSong < 0)
@@ -329,7 +342,34 @@
                     this.loadCurrentSong()
                 }
 
+                this.loadCurrentSong(this.currentRandomSong)
+                this.activeSong()
             },
+            activeSong: function() {
+                let activedSong = $('.song.active')
+                activedSong?.classList.remove('active')
+
+                let allSong = $$('.song')
+                let currentSong = this.currentRandomSong != null ? this.currentRandomSong : this.songs[this.currentIndexSong]
+                let newActiveSong = Array.from(allSong).find( song => {
+                    return song.getElementsByClassName('title')[0].innerHTML == currentSong.name
+                } )
+                
+                newActiveSong.classList.add('active')
+
+                this.scrollToActiveSong(newActiveSong)
+            },
+            scrollToActiveSong: function(newActiveSong) {
+                setTimeout(function() {
+                    newActiveSong.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'nearest',
+                    })
+                }, 200)
+            },
+
+
+
 
             start: function () {
                 //define prop for app
