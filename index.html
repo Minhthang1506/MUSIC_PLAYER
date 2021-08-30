@@ -74,17 +74,26 @@
         const $ = document.querySelector.bind(document)
         const $$ = document.querySelectorAll.bind(document)
     
+        //dashboard component
         const heading = $('header h2')
         const CDThumbnail = $('.cd-thumb')
         const audio = $('#audio')
         const CD = $('.cd')
+        
+        //navigate component
         const playBtn = $('.btn-toggle-play')
         const player = $('.player')
         const progressBar = $('#progress')
+        const nextSongBtn = $('.btn-next')
+        const previousSongBtn = $('.btn-prev')
+        const repeatSongBtn = $('.btn-repeat')
+        const randomSongBtn = $('.btn-random')
 
         const app = {
             currentIndexSong: 0,
             isPlaying: false,
+            isRepeat: false,
+            isRandom: false,
             songs: [{
                 name: '3107 - 3',
                 singer: 'Nâu',
@@ -92,55 +101,60 @@
                 image: './assets/img/3107.jpg'
             },
             {
-                name: '3107 - 3',
-                singer: 'Nâu',
-                path: './assets/music/3107.mp3',
-                image: './assets/img/3107.jpg'
+                name: 'Phố đã lên đèn',
+                singer: 'MCK',
+                path: './assets/music/Bai_Nay_Chill_Phet.mp3',
+                image: './assets/img/Bai_nay_chill_phet.jpg'
             },
             {
-                name: '3107 - 3',
-                singer: 'Nâu',
-                path: './assets/music/3107.mp3',
-                image: './assets/img/3107.jpg'
+                name: 'No Promises',
+                singer: 'Shayne Ward',
+                path: './assets/music/No_Promises_Shayne_Ward.mp3',
+                image: './assets/img/No_promises.jpg'
             },
             {
-                name: '3107 - 3',
-                singer: 'Nâu',
-                path: './assets/music/3107.mp3',
-                image: './assets/img/3107.jpg'
+                name: 'Bài này chill phết',
+                singer: 'Đen Vâu',
+                path: './assets/music/Bai_Nay_Chill_Phet.mp3',
+                image: './assets/img/Bai_nay_chill_phet.jpg'
             },
             {
-                name: '3107 - 3',
-                singer: 'Nâu',
-                path: './assets/music/3107.mp3',
-                image: './assets/img/3107.jpg'
+                name: 'Reality',
+                singer: 'Lost Frequencies_ Janieck Devy',
+                path: './assets/music/Reality_Lost Frequencies_ Janieck Devy.mp3',
+                image: './assets/img/Reality.jpg'
             },
             {
-                name: '3107 - 3',
-                singer: 'Nâu',
-                path: './assets/music/3107.mp3',
-                image: './assets/img/3107.jpg'
+                name: 'Thức giấc',
+                singer: 'Dalab',
+                path: './assets/music/Thuc_Giac.mp3',
+                image: './assets/img/Thuc_giac.jpg'
             },
-            {
-                name: '3107 - 3',
-                singer: 'Nâu',
-                path: './assets/music/3107.mp3',
-                image: './assets/img/3107.jpg'
-            },
-            {
-                name: '3107 - 3',
-                singer: 'Nâu',
-                path: './assets/music/3107.mp3',
-                image: './assets/img/3107.jpg'
-            },
-            {
-                name: '3107 - 3',
-                singer: 'Nâu',
-                path: './assets/music/3107.mp3',
-                image: './assets/img/3107.jpg'
-            }
+            // {
+            //     name: '3107 - 3',
+            //     singer: 'Nâu',
+            //     path: './assets/music/3107.mp3',
+            //     image: './assets/img/3107.jpg'
+            // },
+            // {
+            //     name: '3107 - 3',
+            //     singer: 'Nâu',
+            //     path: './assets/music/3107.mp3',
+            //     image: './assets/img/3107.jpg'
+            // },
+            // {
+            //     name: '3106 - 3',
+            //     singer: 'Nâu',
+            //     path: './assets/music/3107.mp3',
+            //     image: './assets/img/3107.jpg'
+            // }
             ],
-    
+            randomSongs: [
+                
+            ],
+            currentRandomSong: {
+
+            },
             render: function () {
                 const htmlRender = this.songs.map(song => {
                     return `
@@ -164,6 +178,9 @@
                 Object.defineProperty(this, 'currentSong', {
                     get: function () {
                         return this.songs[this.currentIndexSong]
+                    },
+                    set: function (value) {
+                        
                     }
                 })
             },
@@ -188,29 +205,81 @@
                         audio.play()
                     }
                 }
+                
+                //CD rotating
+                const CDAnimate = CDThumbnail.animate([
+                    {transform: 'rotate(360deg)'}
+                ], {
+                    duration: 10000,
+                    iterations: Infinity
+                })
+                CDAnimate.pause()
 
                 // handle when audio play
                 audio.onplay = function () {
                     player.classList.add('playing')
                     app.isPlaying = true
+                    CDAnimate.play()
                 }
 
                 // handle when audio pause
                 audio.onpause = function () {
                     player.classList.remove('playing')
                     app.isPlaying = false
+                    CDAnimate.pause()
                 }
 
                 //change progressBar 
                 audio.ontimeupdate = function () {
                     var percent = (audio.currentTime * 100 / audio.duration) 
-                    progressBar.value = percent
+                    progressBar.value = percent || 0
                 }
 
                 //change progress of audio
                 progressBar.onchange = function (e) {
                     var percent = e.target.value
                     audio.currentTime = audio.duration * percent / 100
+                }
+
+                //handle next song event
+                nextSongBtn.onclick = function() {
+                    app.nextSong()
+                    audio.play()
+                }
+
+                //handle previous song event
+                previousSongBtn.onclick = function() {
+                    app.previousSong()
+                    audio.play()
+                }
+
+                //handle repeat event
+                repeatSongBtn.onclick = function() {
+                    app.isRepeat = !app.isRepeat
+                    this.classList.toggle('active', app.isRepeat)
+                }
+                
+                //handle end audio event 
+                audio.onended = function () {
+                    if(app.currentIndexSong != app.songs.length -1){ 
+                        app.nextSong()
+                        audio.play()
+                    } else if (app.isRepeat) {
+                        app.nextSong()
+                        audio.play()
+                    }
+                }
+
+                //handle random btn 
+                randomSongBtn.onclick = function() {
+                    if(app.isRandom){
+                        app.isRandom = false
+                        this.classList.remove('active')
+                        app.randomSongs.length = []
+                    } else {
+                        app.isRandom = true
+                        this.classList.add('active')                 
+                    }
                 }
                 
             },
@@ -219,7 +288,49 @@
                 CDThumbnail.style.backgroundImage = `url(${this.currentSong.image})`
                 audio.src = this.currentSong.path
             },
-    
+            loadCurrentRandomSong: function() {
+                heading.textContent = this.currentRandomSong.name
+                CDThumbnail.style.backgroundImage = `url(${this.currentRandomSong.image})`
+                audio.src = this.currentRandomSong.path
+            },
+            createRandomList: function() {
+                this.randomSongs = this.songs.map( it => it)
+            },
+            randomSong: function() {
+                var newRandomIndex 
+                if(this.randomSongs.length == 0)
+                    this.createRandomList()
+                console.log(this.randomSongs)
+                newRandomIndex = Math.floor(Math.random() * this.randomSongs.length)
+                console.log(newRandomIndex)
+                this.currentRandomSong = this.randomSongs.splice(newRandomIndex,1)[0]
+            },
+            nextSong: function() {
+                if(this.isRandom) {
+                    this.randomSong()
+                    this.loadCurrentRandomSong()
+                } else {
+                    this.currentIndexSong++
+                    this.currentIndexSong %= this.songs.length
+                    this.currentSong = this.songs[this.currentIndexSong]
+                    this.loadCurrentSong()
+                }
+                
+            },
+            previousSong: function() {
+                if(this.isRandom) {
+                    this.randomSong()
+                    this.loadCurrentRandomSong()
+                } else {
+                    this.currentIndexSong--
+                    if(this.currentIndexSong < 0)
+                        this.currentIndexSong = this.songs.length - 1
+                    this.currentSong = this.songs[this.currentIndexSong]
+                    this.loadCurrentSong()
+                }
+
+            },
+
             start: function () {
                 //define prop for app
                 this.defineProperties()

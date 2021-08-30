@@ -92,8 +92,12 @@
     color: #666;
     padding: 18px;
     font-size: 18px;
-  }
-  
+  }  
+
+  .control .btn:hover {
+    color: var(--primary-color);
+  }  
+
   .control .btn.active {
     color: var(--primary-color);
   }
@@ -108,6 +112,10 @@
     align-items: center;
     justify-content: center;
     background-color: var(--primary-color);
+  }
+
+  .control .btn-toggle-play:hover {
+    color: #fff;
   }
   
   .progress {
@@ -124,10 +132,16 @@
   .progress::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 12px;
-    height: 6px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
     background-color: var(--primary-color);
     cursor: pointer;
+  }
+  .progress::-webkit-slider-thumb:hover {
+    background-color: var(--primary-color);
+    opacity: 0.9;
+    box-shadow: #ec1f58 0 0 8px;
   }
   
   /* PLAYLIST */
